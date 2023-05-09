@@ -248,6 +248,7 @@ class MainActivity : AppCompatActivity() {
                 "10n" -> binding!!.ivMain.setImageResource(R.drawable.cloud)
                 "11n" -> binding!!.ivMain.setImageResource(R.drawable.rain)
                 "13n" -> binding!!.ivMain.setImageResource(R.drawable.snowflake)
+                //"50n"
             }
 
         }
