@@ -15,6 +15,7 @@ import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import com.example.weather_app.databinding.ActivityMainBinding
 import com.example.weather_app.models.WeatherResponse
 import com.example.weather_app.network.WeatherService
 import com.google.android.gms.location.*
@@ -31,13 +32,16 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : AppCompatActivity() {
 
+    private var binding : ActivityMainBinding? = null
+
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
 
     private var mProgressDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding!!.root)
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -175,6 +179,9 @@ class MainActivity : AppCompatActivity() {
                         hideProgressDialog()
 
                         val weatherList: WeatherResponse? = response.body()
+                        if (weatherList != null) {
+                            setupUI(weatherList)
+                        }
                         Log.i("Response", "$weatherList")
                     }else{
                         val rc = response.code()
@@ -206,6 +213,44 @@ class MainActivity : AppCompatActivity() {
             ).show()
         }
     }
+
+    private fun setupUI(weatherList: WeatherResponse){
+        for (i in weatherList.weather.indices){
+            Log.i("Weather Name", weatherList.weather.toString())
+
+            binding!!.tvMain.text = weatherList.weather[i].main
+            binding!!.tvMainDescription.text = weatherList.weather[i].description
+            binding!!.tvTemp.text =
+                weatherList.main.temp.toString() + getUnit(application.resources.configuration.locales.toString())
+            binding!!.tvHumidity.text = weatherList.main.humidity.toString() + " per cent"
+            binding!!.tvMin.text = weatherList.main.tempMin.toString() + " min"
+            binding!!.tvMax.text = weatherList.main.tempMax.toString() + " max"
+            binding!!.tvSpeed.text = weatherList.wind.speed.toString()
+            binding!!.tvName.text = weatherList.name
+            binding!!.tvCountry.text = weatherList.sys.country
+            binding!!.tvSunriseTime.text = unixTime(weatherList.sys.sunrise.toLong())
+            binding!!.tvSunsetTime.text = unixTime(weatherList.sys.sunset.toLong())
+
+        }
+    }
+
+    private fun getUnit(value: String): String? {
+        Log.i("unitttttt", value)
+        var value = "°C"
+        if ("US" == value || "LR" == value || "MM" == value) {
+            value = "°F"
+        }
+        return value
+    }
+
+    private fun unixTime(timex: Long): String? {
+        val date = Date(timex * 1000L)
+        @SuppressLint("SimpleDateFormat") val sdf =
+            SimpleDateFormat("HH:mm:ss")
+        sdf.timeZone = TimeZone.getDefault()
+        return sdf.format(date)
+    }
+
 
 }
 
